@@ -22,7 +22,7 @@ public class EmployeeImpl implements EmployeeDao{
                 last_name varchar,
                 age int,
                 email varchar,
-                jobId int references jod(id)
+                job_id int references jod(id)
                 """;
         try(Statement statement = connection.createStatement();){
             statement.execute(query);

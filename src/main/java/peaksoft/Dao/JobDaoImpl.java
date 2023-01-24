@@ -19,7 +19,8 @@ private Connection connection =Configuration.getConnection();
                 position varchar,
                 profession varchar,
                 description varchar,
-                experience int);
+                experience int 
+                );
                 """;
 
             try(Statement statement = connection.createStatement()){
@@ -56,16 +57,16 @@ private Connection connection =Configuration.getConnection();
         String query = """
                 select * from jobs where  id  = ?;
                 """;
+
         try(PreparedStatement preparedStatement = connection.prepareStatement(query);){
-            preparedStatement.executeQuery();
-            ResultSet resultSet = preparedStatement.getResultSet();
             preparedStatement.setLong(1, jobId);
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
-                job.setId(resultSet.getLong(1));
-                job.setPosition(resultSet.getString(2));
-                job.setProfession(resultSet.getString(3));
-                job.setDescription(resultSet.getString(4));
-                job.setExperience(resultSet.getInt(5));
+                job.setPosition(resultSet.getString(1));
+                job.setProfession(resultSet.getString(2));
+                job.setDescription(resultSet.getString(3));
+                job.setExperience(resultSet.getInt(4));
+
 
 
             }
@@ -78,14 +79,14 @@ private Connection connection =Configuration.getConnection();
     @Override
     public List<Job> sortByExperience(String ascOrDesc) {
         List<Job> jobs = new ArrayList<>();
-
+        String query = " ";
         String query1 = """
                 select * from jobs order by experience;
                 """;
         String query2 = """
                 Select * from jobs order by experience desc;
                 """;
-        String query = " ";
+
         if(ascOrDesc.equals("asc"))  query=query1;
         else if (ascOrDesc.equals("desc")) {
             query=query2;
@@ -93,42 +94,52 @@ private Connection connection =Configuration.getConnection();
         try (Statement statement = connection.createStatement();){
            ResultSet resultSet = statement.executeQuery(query);
             while (resultSet.next()){
-                jobs.add(new Job(resultSet.getLong("id"),resultSet.getString(2),
-                        resultSet.getString(3),resultSet.getInt(4)));
-                return jobs;
-            }
+                jobs.add(new Job(resultSet.getLong("id"),resultSet.getString("Position"),
+                        resultSet.getString("Profession"),resultSet.getString("Description"),resultSet.getInt("Experience")));
 
+
+            }
+            return jobs;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
 
-        return null;
+
     }
 
     @Override
     public Job getJobByEmployeeId(Long employeeId) {
         Job job = new Job();
+
         String query = """
-                select * from jobs join employees e on jobs.id=e.jobs.id where id = ?;
+                select * from jobs join employees  on jobs.id=employees.jobId where employee.id = ?;
                 """;
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query);
-             ResultSet resultSet = preparedStatement.executeQuery();){
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)){
+            preparedStatement.setLong(1,employeeId);
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()){
-                resultSet.getString(1);
+                job.getId(resultSet.getLong("id"));
+                job.setPosition(resultSet.getString(2));
+                job.setProfession(resultSet.getString(3));
+                job.setDescription(resultSet.getString(4));
+                job.setExperience(resultSet.getInt(5));
+
+
             }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return null;
+        return job;
     }
 
     @Override
     public void deleteDescriptionColumn() {
         String query = """
-                delete column description from table jobs;
-                """;
+                alter table jobs drop column description;""";
+
+
         try(Statement statement = connection.createStatement();) {
             statement.executeUpdate(query);
 

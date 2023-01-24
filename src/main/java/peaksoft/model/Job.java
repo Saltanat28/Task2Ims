@@ -30,7 +30,7 @@ public class Job {
 
     }
 
-    public Long getId() {
+    public Long getId(long aLong) {
         return id;
     }
 
